@@ -20,6 +20,8 @@ trait ActionFormsControllerTrait
             throw FormException::invalidForm($receivedForm);
         }
 
+        $dataObject = $receivedForm->getData();
+
         return $dataObject;
     }
 
@@ -31,7 +33,7 @@ trait ActionFormsControllerTrait
     protected function createFormView(string $type, string $receiveRouteName, $data)
     {
         $options = [
-            'action' => $receiveRouteName,
+            'action' => $this->generateUrl($receiveRouteName),
         ];
 
         /** @var FormInterface $form */
