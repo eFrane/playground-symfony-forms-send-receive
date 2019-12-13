@@ -7,7 +7,7 @@ use AppBundle\Exception\FormException;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 
-trait ActionFormsControllerTrait
+trait UsesForms
 {
     protected function receiveForm(Request $request, string $type, $dataObject)
     {
