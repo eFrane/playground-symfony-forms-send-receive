@@ -1,9 +1,17 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-    <h1>A Form</h1>
+    {% if form is defined %}
+        <h1>A Form</h1>
 
-    <div>
-        {{ form(form) }}
-    </div>
+        <div>
+            {{ form(form) }}
+        </div>
+    {% else %}
+        <h1>A received Form</h1>
+
+        {{ dump(task) }}
+
+        <a href="{{ path('form.show') }}">Send another one</a>
+    {% endif %}
 {% endblock body %}

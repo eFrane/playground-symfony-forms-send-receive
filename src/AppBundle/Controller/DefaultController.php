@@ -51,7 +51,7 @@ class DefaultController extends Controller
         if ($receivedForm->isValid() && $receivedForm->isSubmitted()) {
             $task = $receivedForm->getData();
 
-            var_export($task); exit;
+            return $this->render('form_view.html.twig', compact('task'));
         }
     }
 }
