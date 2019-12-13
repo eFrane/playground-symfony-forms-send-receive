@@ -2,19 +2,23 @@
 
 namespace AppBundle\Controller;
 
+use AppBundle\Exception\FormException;
 use AppBundle\Form\Type\TaskType;
 use AppBundle\Model\Task;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class DefaultController extends Controller
 {
+    use ActionFormsControllerTrait;
+
     /**
      * @Route("/", name="homepage")
+     * @return Response
      */
-    public function indexAction(Request $request)
+    public function indexAction()
     {
         // replace this example code with whatever you need
         return $this->render(
@@ -30,28 +34,27 @@ class DefaultController extends Controller
      */
     public function showFormAction()
     {
-        $form = $this->createForm(TaskType::class, new Task(), ['action' => $this->generateUrl('form.receive')]);
-
         return $this->render(
             'form_view.html.twig',
-            ['form' => $form->createView()]
+            [
+                'form' => $this->createEmptyFormView(TaskType::class, 'form.receive'),
+            ]
         );
     }
 
     /**
      * @Route("/form", name="form.receive", methods={"POST"})
+     * @param Request $request
+     * @return Response
      */
     public function receiveFormAction(Request $request)
     {
-        $task = new Task();
-        $receivedForm = $this->createForm(TaskType::class, $task);
-
-        $receivedForm->handleRequest($request);
-
-        if ($receivedForm->isValid() && $receivedForm->isSubmitted()) {
-            $task = $receivedForm->getData();
-
-            return $this->render('form_view.html.twig', compact('task'));
+        try {
+            $task = $this->receiveForm($request, TaskType::class, new Task());
+        } catch (FormException $e) {
+            // handle form exception
         }
+
+        return $this->render('form_view.html.twig', compact('task'));
     }
 }
