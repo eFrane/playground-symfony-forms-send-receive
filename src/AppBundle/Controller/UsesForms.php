@@ -5,6 +5,7 @@ namespace AppBundle\Controller;
 
 use AppBundle\Exception\FormException;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\Form\FormView;
 use Symfony\Component\HttpFoundation\Request;
 
 trait UsesForms
@@ -25,15 +26,28 @@ trait UsesForms
         return $dataObject;
     }
 
-    protected function createEmptyFormView(string $type, string $receiveRouteName)
+    /**
+     * @param string              $type Form type class name
+     * @param string              $receiveRouteName Route name for generateUrl
+     * @param array<string,mixed> $receiveRouteParameters Route parameters for generateUrl
+     * @return FormView
+     */
+    protected function createEmptyFormView(string $type, string $receiveRouteName, array $receiveRouteParameters = [])
     {
-        return $this->createFormView($type, $receiveRouteName, null);
+        return $this->createFormView($type, null, $receiveRouteName, $receiveRouteParameters);
     }
 
-    protected function createFormView(string $type, string $receiveRouteName, $data)
+    /**
+     * @param string              $type Form type class name
+     * @param mixed|null          $data Data to pre-populate the form view
+     * @param string              $receiveRouteName Route name for generateUrl
+     * @param array<string,mixed> $receiveRouteParameters Route parameters for generateUrl
+     * @return FormView
+     */
+    protected function createFormView(string $type, $data, string $receiveRouteName, array $receiveRouteParameters = [])
     {
         $options = [
-            'action' => $this->generateUrl($receiveRouteName),
+            'action' => $this->generateUrl($receiveRouteName, $receiveRouteParameters),
         ];
 
         /** @var FormInterface $form */

@@ -5,6 +5,7 @@ namespace AppBundle\Controller;
 use AppBundle\Exception\FormException;
 use AppBundle\Form\Type\TaskType;
 use AppBundle\Model\Task;
+use DateTime;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -25,12 +26,13 @@ class DefaultController extends Controller
     {
         $this->savedTask = new Task();
 
-        $this->savedTask->setDueDate(new \DateTime('2019-12-12'));
+        $this->savedTask->setDueDate(new DateTime('2019-12-12'));
         $this->savedTask->setTask('I am a task to be edited');
     }
 
     /**
      * @Route("/", name="homepage")
+     *
      * @return Response
      */
     public function indexAction()
@@ -46,6 +48,7 @@ class DefaultController extends Controller
 
     /**
      * @Route("/form", name="form.new", methods={"GET"})
+     *
      * @return Response
      */
     public function newFormAction()
@@ -53,13 +56,17 @@ class DefaultController extends Controller
         return $this->render(
             'form_view.html.twig',
             [
-                'form' => $this->createEmptyFormView(TaskType::class, 'form.receive.new'),
+                'form' => $this->createEmptyFormView(
+                    TaskType::class,
+                    'form.receive'
+                ),
             ]
         );
     }
 
     /**
      * @Route("/form/edit", name="form.edit", methods={"GET"})
+     *
      * @return Response
      */
     public function editFormAction()
@@ -67,44 +74,39 @@ class DefaultController extends Controller
         return $this->render(
             'form_view.html.twig',
             [
-                'form' => $this->createFormView(TaskType::class, 'form.receive.edit', $this->savedTask),
+                'form' => $this->createFormView(
+                    TaskType::class,
+                    $this->savedTask,
+                    'form.receive',
+                    ['taskId' => 1] // simulate an existing task
+                ),
             ]
         );
     }
 
     /**
-     * @Route("/form", name="form.receive.new", methods={"POST"})
-     * @param Request $request
+     * @Route("/form/{taskId}", name="form.receive", methods={"POST"})
+     * @param Request  $request
+     * @param int|null $taskId
+     *
      * @return Response
      */
-    public function receiveNewFormAction(Request $request)
+    public function receiveFormAction(Request $request, int $taskId = null)
     {
+        $task = new Task();
+
+        if (null !== $taskId) {
+            // "load" task
+            $task = $this->savedTask;
+        }
+
         try {
-            $task = $this->receiveForm($request, TaskType::class, new Task());
+            $task = $this->receiveForm($request, TaskType::class, $task);
         } catch (FormException $e) {
             // handle form exception
         }
 
-        return $this->render('form_view.html.twig', compact('task'));
-    }
-
-    /**
-     * @Route("/form/edit", name="form.receive.edit", methods={"POST"})
-     * @param Request $request
-     * @return Response
-     */
-    public function receiveEditFormAction(Request $request)
-    {
-        try {
-            // since we know this here as it's hard coded, we can just pass
-            // $this->savedTask, but in theory the existing Model/DTO
-            // could be fetched via Route / Get-Parameters
-
-            $task = $this->receiveForm($request, TaskType::class, $this->savedTask);
-        } catch (FormException $e) {
-            // handle form exception
-        }
-
+        // In a real application this should be a redirect!
         return $this->render('form_view.html.twig', compact('task'));
     }
 }
