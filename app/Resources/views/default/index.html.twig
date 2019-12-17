@@ -1,7 +1,40 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-    <a href="{{ path('form.new') }}">New Task Example</a>
-    <a href="{{ path('form.edit') }}">Edit Task Example</a>
+    <p>
+        <a href="{{ path('task.new') }}">New Task</a>
+    </p>
+
+    <table border="1">
+        <thead>
+        <tr>
+            <th>Task</th>
+            <th>Due Date</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% if 0 == tasks|length %}
+            <tr>
+                <td colspan="3">
+                    No tasks yet. Create <a href="{{ path('task.new') }}">a new one</a>!
+                </td>
+            </tr>
+        {% else %}
+            {% for task in tasks %}
+                <tr>
+                    <td>{{ task.task }}</td>
+                    <td>{{ task.dueDate|date }}</td>
+                    <td>
+                        <ul>
+                            <li><a href="{{ path('task.edit', {'taskId': task.id}) }}">Edit</a></li>
+                            <li><a href="{{ path('task.delete', {'taskId': task.id}) }}">Delete</a></li>
+                        </ul>
+                    </td>
+                </tr>
+            {% endfor %}
+        {% endif %}
+        </tbody>
+    </table>
 {% endblock %}
 

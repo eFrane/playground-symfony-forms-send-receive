@@ -2,11 +2,13 @@
 
 namespace AppBundle\Controller;
 
+use AppBundle\Entity\Task;
 use AppBundle\Exception\FormException;
 use AppBundle\Form\Type\TaskType;
-use AppBundle\Model\Task;
-use DateTime;
+use AppBundle\Repository\TaskRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -16,97 +18,124 @@ class DefaultController extends Controller
     use UsesForms;
 
     /**
-     * super lazy way of having a "saved task" to edit
-     *
-     * @var Task
+     * @var TaskRepository
      */
-    protected $savedTask;
+    protected $taskRepository;
 
-    public function __construct()
+    /**
+     * @var EntityManagerInterface
+     */
+    protected $entityManager;
+
+    public function __construct(EntityManagerInterface $entityManager)
     {
-        $this->savedTask = new Task();
-
-        $this->savedTask->setDueDate(new DateTime('2019-12-12'));
-        $this->savedTask->setTask('I am a task to be edited');
+        $this->entityManager = $entityManager;
+        $this->taskRepository = $entityManager->getRepository('AppBundle:Task');
     }
 
     /**
-     * @Route("/", name="homepage")
+     * @Route("/", name="task.list")
      *
      * @return Response
      */
     public function indexAction()
     {
+        $tasks = $this->taskRepository->findAll();
+
         // replace this example code with whatever you need
         return $this->render(
             'default/index.html.twig',
-            [
-                'base_dir' => realpath($this->getParameter('kernel.project_dir')).DIRECTORY_SEPARATOR,
-            ]
+            compact('tasks')
         );
     }
 
     /**
-     * @Route("/form", name="form.new", methods={"GET"})
+     * @Route("/task", name="task.new", methods={"GET"})
      *
      * @return Response
      */
-    public function newFormAction()
+    public function newTaskAction()
     {
         return $this->render(
             'form_view.html.twig',
             [
                 'form' => $this->createEmptyFormView(
                     TaskType::class,
-                    'form.receive'
+                    'task.save'
                 ),
             ]
         );
     }
 
     /**
-     * @Route("/form/edit", name="form.edit", methods={"GET"})
+     * @Route("/task/{taskId}", name="task.edit", methods={"GET"})
      *
+     * @param int $taskId
      * @return Response
      */
-    public function editFormAction()
+    public function editTaskAction(int $taskId)
     {
+        $task = $this->taskRepository->find($taskId);
+
         return $this->render(
             'form_view.html.twig',
             [
                 'form' => $this->createFormView(
                     TaskType::class,
-                    $this->savedTask,
-                    'form.receive',
-                    ['taskId' => 1] // simulate an existing task
+                    $task,
+                    'task.save',
+                    ['taskId' => $task->getId()]
                 ),
+                'task' => $task,
             ]
         );
     }
 
     /**
-     * @Route("/form/{taskId}", name="form.receive", methods={"POST"})
+     * @Route(
+     *     "/task/{taskId}",
+     *     name="task.save",
+     *     methods={"POST"},
+     *     requirements={"taskId": "\d+"}
+     * )
+     *
      * @param Request  $request
      * @param int|null $taskId
-     *
-     * @return Response
+     * @return RedirectResponse
      */
-    public function receiveFormAction(Request $request, int $taskId = null)
+    public function saveTaskAction(Request $request, int $taskId = null)
     {
-        $task = new Task();
-
-        if (null !== $taskId) {
-            // "load" task
-            $task = $this->savedTask;
+        if (null === $taskId) {
+            $task = new Task();
+        } else {
+            $task = $this->taskRepository->find($taskId);
         }
 
         try {
             $task = $this->receiveForm($request, TaskType::class, $task);
+
+            $this->entityManager->persist($task);
+            $this->entityManager->flush();
         } catch (FormException $e) {
             // handle form exception
         }
 
-        // In a real application this should be a redirect!
-        return $this->render('form_view.html.twig', compact('task'));
+        return $this->redirectToRoute('task.list');
+    }
+
+    /**
+     * @Route("task/delete/{taskId}", name="task.delete", methods={"GET", "DELETE"})
+     *
+     * @param $taskId
+     * @return RedirectResponse
+     */
+    public function deleteTaskAction(int $taskId)
+    {
+        $task = $this->taskRepository->find($taskId);
+
+        $this->entityManager->remove($task);
+        $this->entityManager->flush();
+
+        return $this->redirectToRoute('task.list');
     }
 }
