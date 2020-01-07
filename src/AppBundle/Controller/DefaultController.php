@@ -106,13 +106,10 @@ class DefaultController extends Controller
      */
     public function saveTaskAction(Request $request, int $taskId = null)
     {
-        $storedTask = $this->taskRepository->find($taskId);
-        if (null === $storedTask) {
-            $storedTask = new Task();
-        }
+        $storedTask = $this->taskRepository->findOrCreate($taskId);
 
         return $this->formHandler->processRequest($request, $storedTask)
-            ->store(static function (Task $taskFromForm) {
+            ->store(function (Task $taskFromForm) {
                 $this->entityManager->persist($taskFromForm);
                 $this->entityManager->flush();
             })

@@ -2,6 +2,7 @@
 
 namespace AppBundle\Repository;
 
+use AppBundle\Entity\Task;
 use Doctrine\ORM\EntityRepository;
 
 /**
@@ -12,4 +13,17 @@ use Doctrine\ORM\EntityRepository;
  */
 class TaskRepository extends EntityRepository
 {
+    public function findOrCreate(int $id = null): Task
+    {
+        if (null !== $id) {
+            /** @var Task $task */
+            $task = $this->find($id);
+
+            if (null !== $task) {
+                return $task;
+            }
+        }
+
+        return new Task();
+    }
 }

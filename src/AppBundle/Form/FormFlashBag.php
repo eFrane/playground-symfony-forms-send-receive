@@ -7,7 +7,10 @@
 namespace AppBundle\Form;
 
 
+use Symfony\Component\Form\Form;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Session\Flash\FlashBag;
+use Symfony\Component\Serializer\Serializer;
 
 class FormFlashBag extends FlashBag
 {
@@ -20,5 +23,20 @@ class FormFlashBag extends FlashBag
         parent::__construct(self::STORAGE_KEY);
 
         $this->setName(self::NAME);
+    }
+
+    public function flashForm(FormInterface $form)
+    {
+        $this->set($form->getName(), serialize($form->getData()));
+    }
+
+    public function getFlashedForm(FormInterface $form): FormInterface
+    {
+        $data = unserialize($this->get($form->getName()));
+        $form->setData($data);
+
+        $form->handleRequest();
+
+        return $form;
     }
 }
