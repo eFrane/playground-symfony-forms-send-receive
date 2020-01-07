@@ -61,10 +61,10 @@ class FormSubmitResponseBuilder
         $this->session = $session;
         $this->urlGenerator = $urlGenerator;
 
-        $referer = $request->headers->get('referer');
+        $referrer = $request->headers->get('referer');
 
-        $this->errorResponse = new RedirectResponse($referer);
-        $this->successResponse = new RedirectResponse($referer);
+        $this->errorResponse = new RedirectResponse($referrer);
+        $this->successResponse = new RedirectResponse($referrer);
     }
 
     public static function create(
