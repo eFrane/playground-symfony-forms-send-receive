@@ -27,14 +27,12 @@ class FormFlashBag extends FlashBag
     public function flashFormData(FormInterface $form, Request $request)
     {
         $this->clear();
-        $this->add($form->getName(), serialize($request->request->all()));
+        $this->add($form->getName(), $request->request->all());
     }
 
     public function reevaluateFlashedForm(FormInterface $form): FormInterface
     {
-        $serializedData = $this->get($form->getName())[0];
-
-        $data = unserialize($serializedData);
+        $data = $this->get($form->getName())[0];
 
         $request = new Request();
         $request->request->replace($data);
