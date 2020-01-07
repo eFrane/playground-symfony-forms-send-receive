@@ -12,12 +12,9 @@ class FormException extends RuntimeException {
      */
     protected $receivedForm;
 
-    public static function invalidForm(FormInterface $receivedForm)
+    public static function noFormSubmitted()
     {
-        $formException = new self('Received an invalid form');
-        $formException->setReceivedForm($receivedForm);
-
-        return $formException;
+        return new self('Received no form');
     }
 
     /**

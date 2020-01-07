@@ -3,7 +3,7 @@
 namespace AppBundle\Controller;
 
 use AppBundle\Entity\Task;
-use AppBundle\Exception\FormException;
+use AppBundle\Form\FormHandler;
 use AppBundle\Form\Type\TaskType;
 use AppBundle\Repository\TaskRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -15,21 +15,28 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class DefaultController extends Controller
 {
-    use UsesForms;
+    /**
+     * @var EntityManagerInterface
+     */
+    protected $entityManager;
+
+    /**
+     * @var FormHandler
+     */
+    protected $formHandler;
 
     /**
      * @var TaskRepository
      */
     protected $taskRepository;
 
-    /**
-     * @var EntityManagerInterface
-     */
-    protected $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager, FormHandler $formHandler)
     {
         $this->entityManager = $entityManager;
+
+        $this->formHandler = $formHandler;
+        $this->formHandler->setFormType(TaskType::class);
+
         $this->taskRepository = $entityManager->getRepository('AppBundle:Task');
     }
 
@@ -38,7 +45,7 @@ class DefaultController extends Controller
      *
      * @return Response
      */
-    public function indexAction()
+    public function listAction()
     {
         $tasks = $this->taskRepository->findAll();
 
@@ -58,12 +65,7 @@ class DefaultController extends Controller
     {
         return $this->render(
             'form_view.html.twig',
-            [
-                'form' => $this->createEmptyFormView(
-                    TaskType::class,
-                    'task.save'
-                ),
-            ]
+            ['form' => $this->formHandler->createEmptyView('task.save')]
         );
     }
 
@@ -80,8 +82,7 @@ class DefaultController extends Controller
         return $this->render(
             'form_view.html.twig',
             [
-                'form' => $this->createFormView(
-                    TaskType::class,
+                'form' => $this->formHandler->createView(
                     $task,
                     'task.save',
                     ['taskId' => $task->getId()]
@@ -105,22 +106,18 @@ class DefaultController extends Controller
      */
     public function saveTaskAction(Request $request, int $taskId = null)
     {
-        if (null === $taskId) {
-            $task = new Task();
-        } else {
-            $task = $this->taskRepository->find($taskId);
+        $storedTask = $this->taskRepository->find($taskId);
+        if (null === $storedTask) {
+            $storedTask = new Task();
         }
 
-        try {
-            $task = $this->receiveForm($request, TaskType::class, $task);
-
-            $this->entityManager->persist($task);
-            $this->entityManager->flush();
-        } catch (FormException $e) {
-            // handle form exception
-        }
-
-        return $this->redirectToRoute('task.list');
+        return $this->formHandler->processRequest($request, $storedTask)
+            ->store(static function (Task $taskFromForm) {
+                $this->entityManager->persist($taskFromForm);
+                $this->entityManager->flush();
+            })
+            ->success('task.list')
+            ->response();
     }
 
     /**

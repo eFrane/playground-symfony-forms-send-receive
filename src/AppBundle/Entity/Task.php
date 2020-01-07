@@ -3,6 +3,7 @@
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Task
@@ -25,6 +26,7 @@ class Task
      * @var string
      *
      * @ORM\Column(name="task", type="string", length=255)
+     * @Assert\Length(min=3, max=255, maxMessage="Task too long", minMessage="Task too short")
      */
     private $task;
 
@@ -32,6 +34,7 @@ class Task
      * @var \DateTime
      *
      * @ORM\Column(name="dueDate", type="datetime", nullable=true)
+     *
      */
     private $dueDate;
 
