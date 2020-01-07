@@ -67,16 +67,10 @@ class FormHandler
         /** @var FormInterface $form */
         $form = $this->formFactory->create($this->formType, $data, $options);
 
-        try {
-            /** @var FlashBag $formFlashBag */
-            $formFlashBag = $this->session->getBag(FormFlashBag::NAME);
-
-            $errors = $formFlashBag->get('errors');
-            if (0 < count($errors)) {
-                var_export($errors); exit;
-            }
-        } catch (InvalidArgumentException $e) {
-            // flashbag may not exist, so no data will be replaced
+        /** @var FormFlashBag $formFlashBag */
+        $formFlashBag = $this->session->getBag(FormFlashBag::NAME);
+        if ($formFlashBag->has($form->getName())) {
+            $form = $formFlashBag->reevaluateFlashedForm($form);
         }
 
         return $form->createView();

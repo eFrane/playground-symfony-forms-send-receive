@@ -109,10 +109,12 @@ class DefaultController extends Controller
         $storedTask = $this->taskRepository->findOrCreate($taskId);
 
         return $this->formHandler->processRequest($request, $storedTask)
-            ->store(function (Task $taskFromForm) {
-                $this->entityManager->persist($taskFromForm);
-                $this->entityManager->flush();
-            })
+            ->store(
+                function (Task $taskFromForm) {
+                    $this->entityManager->persist($taskFromForm);
+                    $this->entityManager->flush();
+                }
+            )
             ->success('task.list')
             ->response();
     }

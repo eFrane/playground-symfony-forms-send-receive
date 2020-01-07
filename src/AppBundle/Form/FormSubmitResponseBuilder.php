@@ -114,7 +114,7 @@ class FormSubmitResponseBuilder
         if (!$this->form->isValid()) {
             /** @var FormFlashBag $formFlashBag */
             $formFlashBag = $this->session->getBag(FormFlashBag::NAME);
-            $formFlashBag->flashForm($this->form);
+            $formFlashBag->flashFormData($this->form, $this->request);
 
             return $this->errorResponse;
         }
