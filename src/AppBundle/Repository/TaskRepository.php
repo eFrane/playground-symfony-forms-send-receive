@@ -13,6 +13,10 @@ use Doctrine\ORM\EntityRepository;
  */
 class TaskRepository extends EntityRepository
 {
+    /**
+     * @param int|null $id
+     * @return Task
+     */
     public function findOrCreate(int $id = null): Task
     {
         if (null !== $id) {

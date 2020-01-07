@@ -12,6 +12,10 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class TaskType extends AbstractType
 {
+    /**
+     * @param FormBuilderInterface $builder
+     * @param array                $options
+     */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
@@ -20,6 +24,9 @@ class TaskType extends AbstractType
             ->add('save', SubmitType::class);
     }
 
+    /**
+     * @param OptionsResolver $optionsResolver
+     */
     public function configureOptions(OptionsResolver $optionsResolver)
     {
         $optionsResolver->setDefaults(['data_class' => Task::class]);

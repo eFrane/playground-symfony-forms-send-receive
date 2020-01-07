@@ -50,6 +50,13 @@ class FormSubmitResponseBuilder
      */
     protected $urlGenerator;
 
+    /**
+     * FormSubmitResponseBuilder constructor.
+     * @param Request               $request
+     * @param FormInterface         $form
+     * @param SessionInterface      $session
+     * @param UrlGeneratorInterface $urlGenerator
+     */
     protected function __construct(
         Request $request,
         FormInterface $form,
@@ -67,6 +74,13 @@ class FormSubmitResponseBuilder
         $this->successResponse = new RedirectResponse($referrer);
     }
 
+    /**
+     * @param Request               $request
+     * @param FormInterface         $form
+     * @param SessionInterface      $session
+     * @param UrlGeneratorInterface $urlGenerator
+     * @return FormSubmitResponseBuilder
+     */
     public static function create(
         Request $request,
         FormInterface $form,
@@ -76,7 +90,11 @@ class FormSubmitResponseBuilder
         return new self($request, $form, $session, $urlGenerator);
     }
 
-    public function store(callable $storageHandler)
+    /**
+     * @param callable $storageHandler
+     * @return $this
+     */
+    public function store(callable $storageHandler): self
     {
         // TODO: validate storage handler
 
@@ -85,7 +103,12 @@ class FormSubmitResponseBuilder
         return $this;
     }
 
-    public function fail(string $route, array $routeParameters = [])
+    /**
+     * @param string $route
+     * @param array<string,mixed>  $routeParameters
+     * @return $this
+     */
+    public function fail(string $route, array $routeParameters = []): self
     {
         $redirectUrl = $this->urlGenerator->generate($route, $routeParameters);
 
@@ -94,6 +117,11 @@ class FormSubmitResponseBuilder
         return $this;
     }
 
+    /**
+     * @param string $route
+     * @param array  $routeParameters
+     * @return $this
+     */
     public function success(string $route, array $routeParameters = [])
     {
         $redirectUrl = $this->urlGenerator->generate($route, $routeParameters);
@@ -103,6 +131,9 @@ class FormSubmitResponseBuilder
         return $this;
     }
 
+    /**
+     * @return RedirectResponse|Response
+     */
     public function response()
     {
         $this->form->handleRequest($this->request);

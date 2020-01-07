@@ -30,6 +30,11 @@ class DefaultController extends Controller
      */
     protected $taskRepository;
 
+    /**
+     * DefaultController constructor.
+     * @param EntityManagerInterface $entityManager
+     * @param FormHandler            $formHandler
+     */
     public function __construct(EntityManagerInterface $entityManager, FormHandler $formHandler)
     {
         $this->entityManager = $entityManager;

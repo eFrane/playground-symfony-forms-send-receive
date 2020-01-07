@@ -7,13 +7,11 @@
 namespace AppBundle\Form;
 
 
-use InvalidArgumentException;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormView;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Session\Flash\FlashBag;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
@@ -40,13 +38,25 @@ class FormHandler
     protected $urlGenerator;
 
 
-    public function __construct(FormFactoryInterface $formFactory, SessionInterface $session, UrlGeneratorInterface $urlGenerator)
-    {
+    /**
+     * FormHandler constructor.
+     * @param FormFactoryInterface  $formFactory
+     * @param SessionInterface      $session
+     * @param UrlGeneratorInterface $urlGenerator
+     */
+    public function __construct(
+        FormFactoryInterface $formFactory,
+        SessionInterface $session,
+        UrlGeneratorInterface $urlGenerator
+    ) {
         $this->formFactory = $formFactory;
         $this->session = $session;
         $this->urlGenerator = $urlGenerator;
     }
 
+    /**
+     * @param string $formType
+     */
     public function setFormType(string $formType)
     {
         $this->formType = $formType;
@@ -70,7 +80,7 @@ class FormHandler
         /** @var FormFlashBag $formFlashBag */
         $formFlashBag = $this->session->getBag(FormFlashBag::NAME);
         if ($formFlashBag->has($form->getName())) {
-            $form = $formFlashBag->reevaluateFlashedForm($form);
+            $form = $formFlashBag->reEvaluateFlashedForm($form);
         }
 
         return $form->createView();
@@ -86,6 +96,11 @@ class FormHandler
         return $this->createView(null, $receiveRouteName, $receiveRouteParameters);
     }
 
+    /**
+     * @param Request $request
+     * @param null    $data
+     * @return FormSubmitResponseBuilder
+     */
     public function processRequest(Request $request, $data = null)
     {
         $form = $this->formFactory->create($this->formType, $data);
